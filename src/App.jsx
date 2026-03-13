@@ -45,7 +45,7 @@ function App() {
   const products = [
     {
       name: 'STRIDE RUNNER PRO',
-      price: 189,
+      price: 1,
       oldPrice: 249,
       image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
       tag: 'BEST SELLER',
