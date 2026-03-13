@@ -52,6 +52,8 @@ function App() {
       colors: ['white', 'black', 'blue']s
 
 
+      
+
     },
     {
       name: 'STRIDE URBAN X',
