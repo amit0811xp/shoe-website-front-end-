@@ -793,8 +793,22 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="border-t border-white/10 pt-8 text-center text-gray-400">
-            © 2024 STRIDE. All rights reserved. Built with passion for sneaker culture.
+          <div className="border-t border-white/10 pt-8">
+            <div className="text-center text-gray-400 mb-4">
+              © 2024 STRIDE. All rights reserved. Built with passion for sneaker culture.
+            </div>
+            
+            {/* Beautiful Credit Section */}
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <span className="text-gray-500">Made with</span>
+              <span className="text-red-500 animate-pulse text-lg">❤️</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-400">Crafted by</span>
+              <span className="font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
+                Amit
+              </span>
+              <span className="text-orange-500">✨</span>
+            </div>
           </div>
         </div>
       </footer>
