@@ -8,9 +8,29 @@ function App() {
   const [scrollY, setScrollY] = useState(0)
   const [selectedSize, setSelectedSize] = useState('9')
   const [cartCount, setCartCount] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [activeSection, setActiveSection] = useState('home')
 
+  // Track active section based on scroll
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+      
+      const sections = ['home', 'collection', 'features', 'gallery', 'about']
+      const current = sections.find(section => {
+        const element = document.getElementById(section)
+        if (element) {
+          const rect = element.getBoundingClientRect()
+          return rect.top <= 100 && rect.bottom >= 100
+        }
+        return false
+      })
+      
+      if (current) setActiveSection(current)
+    }
+    
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -34,6 +54,21 @@ function App() {
     }, 5000)
     return () => clearInterval(interval)
   }, [])
+
+  // Toast notification effect
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showToast])
+
+  // Add to cart with toast
+  const handleAddToCart = (productName) => {
+    setCartCount(cartCount + 1)
+    setToastMessage(`${productName} added to cart!`)
+    setShowToast(true)
+  }
 
   const sneakerImages = {
     white: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
@@ -110,6 +145,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-24 right-4 z-50 animate-slide-in-right">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3">
+            <span className="text-2xl">✓</span>
+            <span className="font-bold">{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-500 ${
         scrollY > 50 
@@ -129,19 +174,25 @@ function App() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
               {[
-                { name: 'Home', href: '#home' },
-                { name: 'Collection', href: '#collection' },
-                { name: 'Technology', href: '#features' },
-                { name: 'Gallery', href: '#gallery' },
-                { name: 'About', href: '#about' }
+                { name: 'Home', href: '#home', id: 'home' },
+                { name: 'Collection', href: '#collection', id: 'collection' },
+                { name: 'Technology', href: '#features', id: 'features' },
+                { name: 'Gallery', href: '#gallery', id: 'gallery' },
+                { name: 'About', href: '#about', id: 'about' }
               ].map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  className="relative px-4 py-2 text-gray-300 hover:text-white font-semibold transition group"
+                  className={`relative px-4 py-2 font-semibold transition group ${
+                    activeSection === link.id 
+                      ? 'text-orange-500' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
                 >
                   {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500 group-hover:w-full transition-all duration-300"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500 transition-all duration-300 ${
+                    activeSection === link.id ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               ))}
             </div>
@@ -180,14 +231,55 @@ function App() {
               </button>
 
               {/* Mobile Menu Button */}
-              <button className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition">
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition"
+              >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  {mobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
                 </svg>
               </button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-black/98 backdrop-blur-xl border-b border-white/10 animate-fade-in">
+            <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+              {[
+                { name: 'Home', href: '#home', id: 'home' },
+                { name: 'Collection', href: '#collection', id: 'collection' },
+                { name: 'Technology', href: '#features', id: 'features' },
+                { name: 'Gallery', href: '#gallery', id: 'gallery' },
+                { name: 'About', href: '#about', id: 'about' }
+              ].map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block text-lg font-semibold transition py-2 ${
+                    activeSection === link.id 
+                      ? 'text-orange-500' 
+                      : 'text-gray-300 hover:text-orange-500'
+                  }`}
+                >
+                  {link.name}
+                  {activeSection === link.id && (
+                    <span className="ml-2 text-orange-500">●</span>
+                  )}
+                </a>
+              ))}
+              <button className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full font-bold transition transform hover:scale-105 mt-4">
+                Shop Now
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500 transition-all duration-300" 
@@ -208,7 +300,7 @@ function App() {
           <div className="space-y-8 animate-fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 backdrop-blur-lg rounded-full text-sm font-bold border border-orange-500/50">
               <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-              ✨ NEW COLLECTION 2024
+              ✨ NEW COLLECTION 2026
             </div>
             
             <h1 className="text-6xl md:text-8xl font-black leading-none">
@@ -251,12 +343,13 @@ function App() {
             </div>
           </div>
 
-          <div className="relative">
+            <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full blur-3xl opacity-30 animate-pulse"></div>
             <div className="relative z-10 animate-float">
               <img 
                 src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80" 
                 alt="Hero Sneaker"
+                loading="lazy"
                 className="w-full transform hover:scale-110 hover:rotate-6 transition duration-500 drop-shadow-2xl"
               />
             </div>
@@ -377,7 +470,7 @@ function App() {
 
               <div className="flex gap-4">
                 <button 
-                  onClick={() => setCartCount(cartCount + 1)}
+                  onClick={() => handleAddToCart('STRIDE AIR ELITE')}
                   className="flex-1 px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full transition transform hover:scale-105 flex items-center justify-center gap-2"
                 >
                   <span>🛒</span>
@@ -795,7 +888,7 @@ function App() {
           </div>
           <div className="border-t border-white/10 pt-8">
             <div className="text-center text-gray-400 mb-4">
-              © 2024 STRIDE. All rights reserved. Built with passion for sneaker culture.
+              © 2026 STRIDE. All rights reserved. Built with passion for sneaker culture.
             </div>
             
             {/* Beautiful Credit Section */}
@@ -812,6 +905,18 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      {scrollY > 500 && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-full flex items-center justify-center shadow-2xl shadow-orange-500/50 transition transform hover:scale-110 animate-fade-in"
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
